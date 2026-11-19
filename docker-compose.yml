@@ -1,0 +1,56 @@
+
+services:
+  oracle:
+    image: gvenzl/oracle-free:latest
+    container_name: citizentech-oracle
+    restart: unless-stopped
+
+    environment:
+      ORACLE_PASSWORD: ${ORACLE_PASSWORD}
+      APP_USER: ${APP_USER}
+      APP_USER_PASSWORD: ${APP_USER_PASSWORD}
+
+    ports:
+      - "127.0.0.1:1521:1521"
+
+    volumes:
+      - oracle_data:/opt/oracle/oradata
+
+    networks:
+      - citizentech_net
+
+    healthcheck:
+      test: ["CMD", "healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: citizentech-api
+    restart: unless-stopped
+
+    environment:
+      ASPNETCORE_HTTP_PORTS: "8080"
+      AplicarMigrations: "true"
+      ConnectionStrings__Oracle: "User Id=${APP_USER};Password=${APP_USER_PASSWORD};Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=oracle)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=FREEPDB1)));"
+    ports:
+      - "8080:8080"
+
+    depends_on:
+      oracle:
+        condition: service_healthy
+
+    networks:
+      - citizentech_net
+
+networks:
+  citizentech_net:
+    driver: bridge
+
+volumes:
+  oracle_data:
