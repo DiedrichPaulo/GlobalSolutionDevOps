@@ -42,7 +42,7 @@ A solução utiliza dois containers independentes, conectados por uma rede Docke
 
 ### Diagrama
 
-![Diagrama](docs/diagrama.jpg)
+![Diagrama](docs/diagrama.png)
 
 ### Portas utilizadas
 
